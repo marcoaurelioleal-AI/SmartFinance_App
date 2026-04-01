@@ -79,8 +79,8 @@ Desenvolvido por **Marco Aurelio Leal** 🚀
 ## 📱 Screenshots
 
 <div align="center">
-  <img src="assets/screenshots/smartfinance1.png" width="200" alt="Home" />
-  <img src="assets/screenshots/smartfinance2.png" width="200" alt="Lista" />
-  <img src="assets/screenshots/smartfinance3.png" width="200" alt="Gráficos" />
-  <img src="assets/screenshots/smartfinance4.png" width="200" alt="IA" />
+  <img src="assets/screenshots/smartfinance1.PNG" width="200" alt="Home" />
+  <img src="assets/screenshots/smartfinance2.PNG" width="200" alt="Lista" />
+  <img src="assets/screenshots/smartfinance3.PNG" width="200" alt="Gráficos" />
+  <img src="assets/screenshots/smartfinance4.PNG" width="200" alt="IA" />
 </div>
