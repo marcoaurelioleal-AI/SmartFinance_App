@@ -69,3 +69,11 @@ Este projeto é para fins de estudo e portfólio. Sinta-se à vontade para clona
 
 ### Conecte-se comigo no LinkedIn!
 [Seu Nome Aqui](https://www.linkedin.com/in/seu-perfil)
+
+## 📱 Screenshots
+
+<div align="center">
+  <img src="./assets/screenshots/home.png" width="300" alt="Tela Inicial" />
+  <img src="./assets/screenshots/graficos.png" width="300" alt="Gráficos de Gastos" />
+  <img src="./assets/screenshots/ia-chat.png" width="300" alt="Chat com IA" />
+</div>
