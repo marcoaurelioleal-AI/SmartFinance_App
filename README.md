@@ -79,7 +79,8 @@ Desenvolvido por **Marco Aurelio Leal** 🚀
 ## 📱 Screenshots
 
 <div align="center">
-  <img src="./assets/screenshots/home.png" width="300" alt="Tela Inicial" />
-  <img src="./assets/screenshots/graficos.png" width="300" alt="Gráficos de Gastos" />
-  <img src="./assets/screenshots/ia-chat.png" width="300" alt="Chat com IA" />
+  <img src="./assets/screenshots/smartfinance1.png" width="200" />
+  <img src="./assets/screenshots/smartfinance2.png" width="200" />
+  <img src="./assets/screenshots/smartfinance3.png" width="200" />
+  <img src="./assets/screenshots/smartfinance4.png" width="200" />
 </div>
