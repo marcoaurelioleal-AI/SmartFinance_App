@@ -2,7 +2,7 @@
 
 O **SmartFinance** é um aplicativo mobile de gestão financeira premium, desenvolvido com **React Native** e **Expo**, que utiliza a inteligência artificial do **Google Gemini** para fornecer insights personalizados sobre seus hábitos de consumo.
 
-![Capa do Projeto](https://via.placeholder.com/1200x600?text=SmartFinance+App+Preview)
+![Capa do Projeto](./assets/screenshots/banner.png)
 
 ---
 
