@@ -67,8 +67,14 @@ Este projeto é para fins de estudo e portfólio. Sinta-se à vontade para clona
 
 ---
 
-### Conecte-se comigo no LinkedIn!
-[Seu Nome Aqui](https://www.linkedin.com/in/seu-perfil)
+---
+
+## 🤝 Conecte-se comigo!
+
+Desenvolvido por **Marco Aurelio Leal** 🚀
+
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](www.linkedin.com/in/marco-aurelio-leal-1a3156180)
+[![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/marcoaurelioleal-AI)
 
 ## 📱 Screenshots
 
