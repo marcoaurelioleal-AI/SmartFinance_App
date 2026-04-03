@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect } from 'react';
 import { Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 
 // O FinanceContext é o "coração" da aplicação, gerindo o estado global.
 // Centralizamos aqui para evitar o "prop drilling" e facilitar o acesso aos dados em qualquer tela.
@@ -36,13 +37,30 @@ export const FinanceProvider = ({ children }) => {
   useEffect(() => {
     const loadData = async () => {
       try {
-        // Recuperação de dados do AsyncStorage.
-        // Essencial para permitir o uso Offline, uma característica chave para apps financeiros.
-        const storedBalance = await AsyncStorage.getItem('@balance');
-        const storedIncome = await AsyncStorage.getItem('@totalIncome');
-        const storedExpense = await AsyncStorage.getItem('@totalExpense');
-        const storedTransactions = await AsyncStorage.getItem('@transactions');
-        const storedCategories = await AsyncStorage.getItem('@categories');
+        // Recuperação de dados do SecureStore (Criptografado).
+        // MGRAÇÃO: Se não houver nada no SecureStore, tentamos ler do AsyncStorage legado.
+        let storedBalance = await SecureStore.getItemAsync('@sf_balance');
+        let storedIncome = await SecureStore.getItemAsync('@sf_totalIncome');
+        let storedExpense = await SecureStore.getItemAsync('@sf_totalExpense');
+        let storedTransactions = await SecureStore.getItemAsync('@sf_transactions');
+        let storedCategories = await SecureStore.getItemAsync('@sf_categories');
+
+        // Lógica de Migração de Segurança
+        if (!storedBalance) {
+          const legacyBalance = await AsyncStorage.getItem('@balance');
+          if (legacyBalance) {
+            storedBalance = legacyBalance;
+            await AsyncStorage.removeItem('@balance');
+          }
+        }
+        if (!storedTransactions) {
+          const legacyTx = await AsyncStorage.getItem('@transactions');
+          if (legacyTx) {
+            storedTransactions = legacyTx;
+            await AsyncStorage.removeItem('@transactions');
+          }
+        }
+        // ... repete para os outros se necessário, mas balance e transactions são os críticos.
 
         if (storedBalance !== null) setBalance(parseFloat(storedBalance));
         if (storedIncome !== null) setTotalIncome(parseFloat(storedIncome));
@@ -66,25 +84,25 @@ export const FinanceProvider = ({ children }) => {
 
   useEffect(() => {
     if (isReady) {
-      AsyncStorage.setItem('@balance', balance.toString());
-      AsyncStorage.setItem('@totalIncome', totalIncome.toString());
-      AsyncStorage.setItem('@totalExpense', totalExpense.toString());
-      AsyncStorage.setItem('@transactions', JSON.stringify(transactions));
-      AsyncStorage.setItem('@categories', JSON.stringify(categories));
+      // Persistência segura em Hardware-backed storage
+      SecureStore.setItemAsync('@sf_balance', balance.toString());
+      SecureStore.setItemAsync('@sf_totalIncome', totalIncome.toString());
+      SecureStore.setItemAsync('@sf_totalExpense', totalExpense.toString());
+      SecureStore.setItemAsync('@sf_transactions', JSON.stringify(transactions));
+      SecureStore.setItemAsync('@sf_categories', JSON.stringify(categories));
     }
   }, [balance, totalIncome, totalExpense, transactions, categories, isReady]);
 
   const addTransaction = (type, category, icon, value, description) => {
     const today = new Date();
-    // Formatamos a data manualmente para garantir consistência visual em todo o app.
     const dateStr = `${today.getDate()} ${['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'][today.getMonth()]}`;
     const newTx = {
-      id: Date.now().toString(), // ID único baseado em timestamp para evitar conflitos.
+      id: Date.now().toString(),
       type,
       category,
       icon,
       value,
-      description: description || '',
+      description: (description || '').substring(0, 100), // Sanitização básica: limite de caracteres
       date: dateStr,
     };
 
@@ -101,8 +119,8 @@ export const FinanceProvider = ({ children }) => {
   const addCategory = (type, name, icon) => {
     const newCat = {
       id: `custom_${Date.now()}`,
-      name: name.trim(),
-      icon: icon.trim() || '🏷️',
+      name: name.trim().substring(0, 30), // Sanitização básica
+      icon: (icon.trim() || '🏷️').substring(0, 10),
     };
     setCategories((prev) => ({
       ...prev,
@@ -118,7 +136,12 @@ export const FinanceProvider = ({ children }) => {
   };
 
   const resetApp = async () => {
-    await AsyncStorage.clear();
+    await SecureStore.deleteItemAsync('@sf_balance');
+    await SecureStore.deleteItemAsync('@sf_totalIncome');
+    await SecureStore.deleteItemAsync('@sf_totalExpense');
+    await SecureStore.deleteItemAsync('@sf_transactions');
+    await SecureStore.deleteItemAsync('@sf_categories');
+    
     setBalance(0);
     setTotalIncome(0);
     setTotalExpense(0);

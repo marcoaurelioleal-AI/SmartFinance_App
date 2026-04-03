@@ -1,50 +1,61 @@
-// Esta função encapsula toda a lógica de comunicação com o Google Gemini.
-// Fornecer o saldo e as transações reais como "Contexto" permite que a IA 
-// dê conselhos personalizados em vez de dicas genéricas.
+/**
+ * ⚠️ AVISO DE SEGURANÇA ⚠️
+ * O uso de EXPO_PUBLIC_GEMINI_API_KEY expõe sua chave no código fonte do app (bundle JS).
+ * Para apps em produção, utilize um Proxy Backend para ocultar a chave.
+ */
 export const consultarIA = async (balance, transactions, userQuestion) => {
-  // Verificação de segurança para evitar chamadas de API sem dados relevantes.
+  // Prevenção de chamadas vazias desnecessárias
   if (transactions.length === 0 && balance === 0) {
     throw new Error('Adicione transações do dia a dia antes de consultar a Inteligência Artificial.');
   }
 
+  // Acessando a variável de ambiente do Expo (Client-side)
   const GEMINI_API_KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY; 
   
   if (!GEMINI_API_KEY) {
-    throw new Error('⚠️ Falha na Conexão.\nA chave de acesso não foi encontrada no .env. (Se acabou de criar, reinicie o app no terminal).');
+    console.error('ERRO: EXPO_PUBLIC_GEMINI_API_KEY não encontrada no .env');
+    throw new Error('Serviço indisponível no momento. Verifique as configurações da chave de API.');
   }
 
-  // Serializamos os gastos em texto plano para que o LLM consiga processar 
-  // os dados sem a necessidade de parsing complexo de JSON na requisição.
+  // Serialização controlada para evitar prompts excessivamente longos ou malformados
   const textoGastos = transactions
-    .map(t => `${t.date}: ${t.category} (${t.description || 'S/N'}) - R$ ${t.value.toFixed(2)}`)
+    .slice(0, 50) // Limite de 50 transações para o prompt
+    .map(t => `${t.date}: ${t.category} - R$ ${t.value.toFixed(2)}`)
     .join('\n');
 
-  // Prompt Engineering: Definimos um papel (Persona) e injetamos os dados vivos.
-  // Isso garante que a IA não "alucine" gastos e se atenha ao balanço real do usuário.
-  const prompt = `Você é o consultor do SmartFinance. O usuário tem R$ ${balance.toFixed(2)} e estas transações:
+  const prompt = `Você é o consultor do SmartFinance. O usuário tem R$ ${balance.toFixed(2)} e estas transações recentes:
 ${textoGastos}
 
-Responda à pergunta dele com base nesses dados reais: ${userQuestion || 'Pode analisar meus gastos e me dar algumas dicas?'}`;
-
+Responda: ${userQuestion || 'Dê dicas fundamentadas nos meus gastos.'}`;
 
   try {
-    const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+    const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+      body: JSON.stringify({ 
+        contents: [{ parts: [{ text: prompt }] }],
+        // Configuração de segurança de conteúdo (opcional mas recomendado)
+        safetySettings: [
+          { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_MEDIUM_AND_ABOVE" }
+        ]
+      })
     });
+
     const data = await resp.json();
 
-    if(data.error) {
-      throw new Error(`⚠️ Falha na Conexão com a Inteligência Artificial.\nVá no arquivo .env e garanta que sua chave EXPO_PUBLIC_GEMINI_API_KEY está válida.`);
-    } else {
-      const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-      return text || 'A IA não retornou conselhos dessa vez.';
+    if (resp.status !== 200 || data.error) {
+      console.error('Erro API Gemini:', data.error);
+      throw new Error('A Inteligência Artificial está ocupada. Tente novamente em instantes.');
     }
+
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    return text || 'Não consegui processar as dicas desta vez.';
+
   } catch (err) {
-    if (err.message.includes('⚠️') || err.message.includes('Adicione')) {
-      throw err; // Re-throw known custom errors
-    }
-    throw new Error('Erro catastrófico ao conectar na API Google Gemini.');
+    // Log interno seguro, mensagem genérica para o usuário
+    console.log('[GeminiService Error]:', err.message);
+    
+    if (err.message.includes('Adicione')) throw err;
+    throw new Error('Falha na conexão com o consultor financeiro.');
   }
 };
